@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">JBRss</string>
+    <string name="authserver">http://xn--80aafhfrpg0adapheyc1nya.xn--p1ai:1111/acc/</string>
+    <string name="rssservice">http://xn--80aafhfrpg0adapheyc1nya.xn--p1ai:1111/rss/</string>
 </resources>
