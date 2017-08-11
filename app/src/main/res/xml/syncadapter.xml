@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<sync-adapter
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:contentAuthority="ru.terra.jbrss"
-    android:accountType="ru.terra.jbrss"
-    android:userVisible="true"
-    android:supportsUploading="true"
+<sync-adapter xmlns:android="http://schemas.android.com/apk/res/android"
+    android:accountType="ru.terra.jbrss.core.JBRssAccount"
     android:allowParallelSyncs="false"
-    android:isAlwaysSyncable="true"/>
+    android:contentAuthority="ru.terra.jbrss"
+    android:isAlwaysSyncable="true"
+    android:supportsUploading="true"
+    android:userVisible="true" />

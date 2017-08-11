@@ -1,13 +1,17 @@
 package ru.terra.jbrss.net;
 
 
+import com.android.volley.Response;
+
+import org.json.JSONObject;
+
 import java.util.List;
 
 import ru.terra.jbrss.net.dto.FeedDto;
 import ru.terra.jbrss.net.dto.FeedPostDto;
 
 public interface Requestor {
-    String login(String user, String pass);
+    void login(String user, String pass, Response.Listener<JSONObject> listener);
 
     List<FeedDto> getFeeds(String authToken, String uid);
 

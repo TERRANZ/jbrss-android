@@ -7,6 +7,7 @@ import android.os.Bundle;
 
 import ru.terra.jbrss.R;
 import ru.terra.jbrss.activity.parts.LoginFragment;
+import ru.terra.jbrss.core.JBRssAccount;
 
 public class LoginActivity extends AccountAuthenticatorActivity {
 
@@ -24,7 +25,7 @@ public class LoginActivity extends AccountAuthenticatorActivity {
         }
     }
 
-    public void onTokenReceived(Account account, String password, String token) {
+    public void onTokenReceived(JBRssAccount account, String password, String token) {
         final AccountManager am = AccountManager.get(this);
         final Bundle result = new Bundle();
         if (am.addAccountExplicitly(account, password, new Bundle())) {

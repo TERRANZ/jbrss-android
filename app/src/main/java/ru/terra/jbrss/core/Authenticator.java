@@ -10,6 +10,10 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 
+import com.android.volley.Response;
+
+import org.json.JSONObject;
+
 import ru.terra.jbrss.activity.LoginActivity;
 import ru.terra.jbrss.net.impl.RequestorImpl;
 
@@ -48,17 +52,22 @@ public class Authenticator extends AbstractAccountAuthenticator {
     public Bundle getAuthToken(AccountAuthenticatorResponse response, Account account, String authTokenType, Bundle options) throws NetworkErrorException {
         final Bundle result = new Bundle();
         final AccountManager am = AccountManager.get(mContext.getApplicationContext());
-        String authToken = am.peekAuthToken(account, authTokenType);
-        if (TextUtils.isEmpty(authToken)) {
+        final String[] authToken = {am.peekAuthToken(account, authTokenType)};
+        if (TextUtils.isEmpty(authToken[0])) {
             final String password = am.getPassword(account);
             if (!TextUtils.isEmpty(password)) {
-                authToken = new RequestorImpl(mContext).login(account.name, password);
+                new RequestorImpl(mContext).login(account.name, password, new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        authToken[0] = response.optString("token_type") + " " + response.optString("access_token");
+                    }
+                });
             }
         }
-        if (!TextUtils.isEmpty(authToken)) {
+        if (!TextUtils.isEmpty(authToken[0])) {
             result.putString(AccountManager.KEY_ACCOUNT_NAME, account.name);
             result.putString(AccountManager.KEY_ACCOUNT_TYPE, account.type);
-            result.putString(AccountManager.KEY_AUTHTOKEN, authToken);
+            result.putString(AccountManager.KEY_AUTHTOKEN, authToken[0]);
         } else {
             final Intent intent = new Intent(mContext, LoginActivity.class);
             intent.putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, response);

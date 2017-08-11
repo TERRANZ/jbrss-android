@@ -8,6 +8,7 @@ public class Constants {
         public static final String ALL_IDS = "/ids";
         public static final String CREATE = "/create";
         public static final String LOGIN = "/login";
+        public static final String TOKEN = "oauth/token";
     }
 
     public static class Rss {
