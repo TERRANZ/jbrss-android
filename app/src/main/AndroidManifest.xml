@@ -2,6 +2,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="ru.terra.jbrss">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_SYNC_SETTINGS" />
+    <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS" />
+    <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS" />
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.MANAGE_ACCOUNTS" />
+    <uses-permission android:name="android.permission.USE_CREDENTIALS" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -17,7 +25,37 @@
             </intent-filter>
         </activity>
         <activity android:name=".activity.FeedsActivity" />
-        <activity android:name=".activity.PostsActivity"></activity>
+        <activity android:name=".activity.PostsActivity" />
+
+        <service android:name=".core.AuthenticatorService">
+            <intent-filter>
+                <action android:name="android.accounts.AccountAuthenticator" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accounts.AccountAuthenticator"
+                android:resource="@xml/authenticator" />
+        </service>
+        <service
+            android:name="ru.terra.jbrss.core.SyncService"
+            android:exported="true"
+            android:process=":sync">
+            <intent-filter>
+                <action android:name="android.content.SyncAdapter"/>
+            </intent-filter>
+            <meta-data android:name="android.content.SyncAdapter"
+                android:resource="@xml/syncadapter" />
+        </service>
+        <provider
+            android:name=".core.FeedContentProvider"
+            android:authorities="ru.terra.jbrss"
+            android:exported="false"
+            android:syncable="true" />
+
+        <provider
+            android:name=".core.PostsContentProvider"
+            android:authorities="ru.terra.jbrss"
+            android:exported="false"
+            android:syncable="true" />
     </application>
 
 </manifest>

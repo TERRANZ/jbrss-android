@@ -1,5 +1,7 @@
 package ru.terra.jbrss.net.impl;
 
+import android.content.Context;
+
 import java.util.List;
 
 import ru.terra.jbrss.net.Requestor;
@@ -7,6 +9,13 @@ import ru.terra.jbrss.net.dto.FeedDto;
 import ru.terra.jbrss.net.dto.FeedPostDto;
 
 public class RequestorImpl implements Requestor {
+
+    private Context context;
+
+    public RequestorImpl(Context context) {
+        this.context = context;
+    }
+
     @Override
     public String login(String user, String pass) {
         return null;
