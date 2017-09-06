@@ -19,6 +19,8 @@ import com.android.volley.Response;
 import ru.terra.jbrss.net.Requestor;
 import ru.terra.jbrss.net.dto.FeedDto;
 import ru.terra.jbrss.net.dto.FeedListDto;
+import ru.terra.jbrss.net.dto.FeedPostDto;
+import ru.terra.jbrss.net.dto.FeedPostsPageableDto;
 import ru.terra.jbrss.net.impl.RequestorImpl;
 import ru.terra.jbrss.storage.entity.FeedContract;
 import ru.terra.jbrss.storage.entity.PostContract;
@@ -47,11 +49,11 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, final ContentProviderClient provider, final SyncResult syncResult) {
         try {
-            String authToken = mAccountManager.blockingGetAuthToken(account, JBRssAccount.TYPE, true);
+            final String authToken = mAccountManager.blockingGetAuthToken(account, JBRssAccount.TYPE, true);
             requestor.getFeeds(authToken, new Response.Listener<FeedListDto>() {
                 @Override
                 public void onResponse(FeedListDto response) {
-                    for (FeedDto feed : response.getData()) {
+                    for (final FeedDto feed : response.getData()) {
                         try {
                             if (!checkFeed(feed.id, provider)) {
                                 ContentValues cv = new ContentValues();
@@ -61,9 +63,35 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                                 cv.put(FeedContract.FeedEntry.URL, feed.feedurl);
                                 provider.insert(FeedContract.CONTENT_URI, cv);
                                 Log.i(this.getClass().getName(), "Loaded feed: " + feed.feedname);
+                                ++syncResult.stats.numInserts;
                             }
+                            requestor.getFeedPosts(authToken, feed.getId(), 1, 5, new Response.Listener<FeedPostsPageableDto>() {
+                                @Override
+                                public void onResponse(FeedPostsPageableDto response) {
+                                    try {
+                                        for (FeedPostDto fp : response.getPosts()) {
+                                            if (!checkPost(fp.getId(), provider)) {
+                                                ContentValues cv = new ContentValues();
+                                                cv.put(PostContract.PostEntity.EXTERNAL_ID, fp.getId());
+                                                cv.put(PostContract.PostEntity.DATE, fp.getPostdate());
+                                                cv.put(PostContract.PostEntity.FEED_ID, fp.getFeedId());
+                                                cv.put(PostContract.PostEntity.LINK, fp.getPostlink());
+                                                cv.put(PostContract.PostEntity.TEXT, fp.getPosttext());
+                                                cv.put(PostContract.PostEntity.TITLE, fp.getPosttitle());
+                                                provider.insert(PostContract.CONTENT_URI, cv);
+                                                Log.i(this.getClass().getName(), "Loaded post: " + fp.getPosttitle());
+                                                ++syncResult.stats.numInserts;
+                                            }
+                                        }
+                                    } catch (RemoteException e) {
+                                        e.printStackTrace();
+                                        ++syncResult.stats.numIoExceptions;
+                                    }
+                                }
+                            });
                         } catch (RemoteException e) {
                             e.printStackTrace();
+                            ++syncResult.stats.numIoExceptions;
                         }
                     }
                 }

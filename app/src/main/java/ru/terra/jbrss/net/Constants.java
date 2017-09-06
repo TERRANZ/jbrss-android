@@ -15,7 +15,7 @@ public class Constants {
 
     public static class Rss {
         public static final String FEED = "/feed";
-        public static final String FEED_POSTS = "/{fid}/list";
+        public static final String FEED_POSTS = FEED + "/{fid}/list";
         public static final String ADD = "/add";
         public static final String DEL = "/{fid}/del";
         public static final String UPDATE = "/update";

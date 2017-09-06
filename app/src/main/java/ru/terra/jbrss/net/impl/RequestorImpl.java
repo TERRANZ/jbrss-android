@@ -14,8 +14,6 @@ import com.android.volley.toolbox.BasicNetwork;
 import com.android.volley.toolbox.DiskBasedCache;
 import com.android.volley.toolbox.HurlStack;
 
-import org.json.JSONObject;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,6 +21,7 @@ import ru.terra.jbrss.R;
 import ru.terra.jbrss.net.Constants;
 import ru.terra.jbrss.net.Requestor;
 import ru.terra.jbrss.net.dto.FeedListDto;
+import ru.terra.jbrss.net.dto.FeedPostsPageableDto;
 import ru.terra.jbrss.net.dto.LoginDTO;
 
 public class RequestorImpl implements Requestor {
@@ -86,8 +85,33 @@ public class RequestorImpl implements Requestor {
     }
 
     @Override
-    public void getFeedPosts(String authToken, Integer targetFeed, Integer page, Integer perPage, Response.Listener<JSONObject> listener) {
-
+    public void getFeedPosts(String authToken, Integer targetFeed, Integer page, Integer perPage, Response.Listener<FeedPostsPageableDto> listener) {
+        String myId = PreferenceManager.getDefaultSharedPreferences(context).getString(
+                context.getString(R.string.myuid),
+                ""
+        );
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", authToken);
+        headers.put("Content-Type", "application/json");
+        String url = context.getString(R.string.rssservice) + myId + Constants.Rss.FEED_POSTS;
+        url = url.replace("{fid}", targetFeed.toString());
+        url += "?page=";
+        url += page;
+        url += "&limit=";
+        url += perPage;
+        VolleyRequest<FeedPostsPageableDto> vr = new VolleyRequest<>(
+                Request.Method.GET,
+                url,
+                FeedPostsPageableDto.class,
+                headers,
+                new HashMap<String, String>(),
+                listener, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e(RequestorImpl.class.getName(), "Error while loading posts", error);
+            }
+        });
+        mRequestQueue.add(vr);
     }
 
 }

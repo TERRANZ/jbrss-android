@@ -6,6 +6,7 @@ import com.android.volley.Response;
 import org.json.JSONObject;
 
 import ru.terra.jbrss.net.dto.FeedListDto;
+import ru.terra.jbrss.net.dto.FeedPostsPageableDto;
 import ru.terra.jbrss.net.dto.LoginDTO;
 
 public interface Requestor {
@@ -13,5 +14,5 @@ public interface Requestor {
 
     void getFeeds(String authToken, Response.Listener<FeedListDto> listener);
 
-    void getFeedPosts(String authToken, Integer targetFeed, Integer page, Integer perPage, Response.Listener<JSONObject> listener);
+    void getFeedPosts(String authToken, Integer targetFeed, Integer page, Integer perPage, Response.Listener<FeedPostsPageableDto> listener);
 }
