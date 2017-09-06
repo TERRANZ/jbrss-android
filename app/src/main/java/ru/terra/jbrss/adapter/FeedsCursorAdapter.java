@@ -18,7 +18,7 @@ public class FeedsCursorAdapter extends CursorAdapter {
 
     @Override
     public View newView(Context context, Cursor cursor, ViewGroup parent) {
-        return View.inflate(context, R.layout.i_feeds, parent);
+        return View.inflate(context, R.layout.i_feeds, null);
     }
 
     @Override

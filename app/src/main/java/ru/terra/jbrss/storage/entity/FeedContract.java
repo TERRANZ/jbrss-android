@@ -1,8 +1,15 @@
 package ru.terra.jbrss.storage.entity;
 
+import android.net.Uri;
 import android.provider.BaseColumns;
 
+import ru.terra.jbrss.net.Constants;
+
 public class FeedContract {
+
+    public static String CONTENT_DIRECTORY = "feed";
+    public static Uri CONTENT_URI = Uri.parse("content://" + Constants.AUTHORITY + "/" + CONTENT_DIRECTORY);
+
 
     public static abstract class FeedEntry implements BaseColumns {
         public static final String TABLE_NAME = "feed";

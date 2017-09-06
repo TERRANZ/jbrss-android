@@ -1,6 +1,8 @@
 package ru.terra.jbrss.net;
 
 public class Constants {
+    public static final String AUTHORITY = "ru.terra.jbrss";
+
     public static class Account {
         public static final String USER = "user";
         public static final String GET_ID = "/{client}/id";

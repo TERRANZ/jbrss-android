@@ -16,5 +16,3 @@ CREATE TABLE post (
   post_text text,
   foreign key (post_feed_id) references feed(ext_id)
 );
-
-insert into feed(feed_name,feed_unread,ext_id)  values("Все записи",0,-1);
