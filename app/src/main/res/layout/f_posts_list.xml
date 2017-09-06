@@ -9,5 +9,5 @@
     android:layout_marginLeft="16dp"
     android:layout_marginRight="16dp"
     app:layoutManager="LinearLayoutManager"
-    tools:context="ru.terra.jbrss.activity.parts.PostsFragment"
+    tools:context="ru.terra.jbrss.fragment.PostsFragment"
     tools:listitem="@layout/f_posts" />

@@ -1,4 +1,4 @@
-package ru.terra.jbrss.activity.parts;
+package ru.terra.jbrss.fragment;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -12,8 +12,6 @@ import android.view.ViewGroup;
 
 import ru.terra.jbrss.R;
 import ru.terra.jbrss.net.dto.FeedPostDto;
-
-import java.util.List;
 
 /**
  * A fragment representing a list of Items.

@@ -8,13 +8,15 @@ import android.accounts.NetworkErrorException;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.text.TextUtils;
 
 import com.android.volley.Response;
 
-import org.json.JSONObject;
-
+import ru.terra.jbrss.R;
 import ru.terra.jbrss.activity.LoginActivity;
+import ru.terra.jbrss.net.Requestor;
+import ru.terra.jbrss.net.dto.LoginDTO;
 import ru.terra.jbrss.net.impl.RequestorImpl;
 
 public class Authenticator extends AbstractAccountAuthenticator {
@@ -49,17 +51,22 @@ public class Authenticator extends AbstractAccountAuthenticator {
     }
 
     @Override
-    public Bundle getAuthToken(AccountAuthenticatorResponse response, Account account, String authTokenType, Bundle options) throws NetworkErrorException {
+    public Bundle getAuthToken(AccountAuthenticatorResponse response, final Account account, String authTokenType, Bundle options) throws NetworkErrorException {
         final Bundle result = new Bundle();
         final AccountManager am = AccountManager.get(mContext.getApplicationContext());
         final String[] authToken = {am.peekAuthToken(account, authTokenType)};
         if (TextUtils.isEmpty(authToken[0])) {
             final String password = am.getPassword(account);
             if (!TextUtils.isEmpty(password)) {
-                new RequestorImpl(mContext).login(account.name, password, new Response.Listener<JSONObject>() {
+                final Requestor requestor = new RequestorImpl(mContext);
+                requestor.login(account.name, password, new Response.Listener<LoginDTO>() {
                     @Override
-                    public void onResponse(JSONObject response) {
-                        authToken[0] = response.optString("token_type") + " " + response.optString("access_token");
+                    public void onResponse(LoginDTO response) {
+                        authToken[0] = response.token_type + " " + response.access_token;
+                        PreferenceManager.getDefaultSharedPreferences(mContext).edit().putString(
+                                mContext.getString(R.string.myuid),
+                                response.uid
+                        ).apply();
                     }
                 });
             }

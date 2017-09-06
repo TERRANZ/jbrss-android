@@ -46,16 +46,11 @@
                 android:resource="@xml/syncadapter" />
         </service>
         <provider
-            android:name=".core.FeedContentProvider"
+            android:name=".storage.impl.JBRSSContentProvider"
             android:authorities="ru.terra.jbrss"
             android:exported="false"
             android:syncable="true" />
 
-        <provider
-            android:name=".core.PostsContentProvider"
-            android:authorities="ru.terra.jbrss"
-            android:exported="false"
-            android:syncable="true" />
     </application>
 
 </manifest>

@@ -3,11 +3,12 @@ package ru.terra.jbrss.activity;
 import android.accounts.Account;
 import android.accounts.AccountAuthenticatorActivity;
 import android.accounts.AccountManager;
+import android.content.Intent;
 import android.os.Bundle;
 
 import ru.terra.jbrss.R;
-import ru.terra.jbrss.activity.parts.LoginFragment;
 import ru.terra.jbrss.core.JBRssAccount;
+import ru.terra.jbrss.fragment.LoginFragment;
 
 public class LoginActivity extends AccountAuthenticatorActivity {
 
@@ -18,10 +19,17 @@ public class LoginActivity extends AccountAuthenticatorActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.a_fragment);
         if (savedInstanceState == null) {
-            getFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.frame1, new LoginFragment())
-                    .commit();
+            final AccountManager am = AccountManager.get(this);
+            final Account availableAccounts[] = am.getAccountsByType(JBRssAccount.TYPE);
+            if (availableAccounts.length > 0) {
+                startActivity(new Intent(this, FeedsActivity.class));
+                finish();
+            } else {
+                getFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.frame1, new LoginFragment())
+                        .commit();
+            }
         }
     }
 

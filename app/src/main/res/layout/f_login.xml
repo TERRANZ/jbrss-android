@@ -19,6 +19,7 @@
         android:layout_centerHorizontal="true"
         android:hint="@string/login"
         android:inputType="text"
+        android:text="terranz"
         android:minEms="12" />
 
     <EditText

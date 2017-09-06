@@ -1,8 +1,9 @@
-package ru.terra.jbrss.activity.parts;
+package ru.terra.jbrss.fragment;
 
 import android.app.Fragment;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,11 +13,11 @@ import android.widget.EditText;
 
 import com.android.volley.Response;
 
-import org.json.JSONObject;
-
 import ru.terra.jbrss.R;
 import ru.terra.jbrss.activity.LoginActivity;
 import ru.terra.jbrss.core.JBRssAccount;
+import ru.terra.jbrss.net.Requestor;
+import ru.terra.jbrss.net.dto.LoginDTO;
 import ru.terra.jbrss.net.impl.RequestorImpl;
 
 public class LoginFragment extends Fragment implements View.OnClickListener {
@@ -57,12 +58,18 @@ public class LoginFragment extends Fragment implements View.OnClickListener {
                 new AsyncTask<Void, Void, Void>() {
                     @Override
                     protected Void doInBackground(Void... params) {
-                        new RequestorImpl(getActivity()).login(login, pass, new Response.Listener<JSONObject>() {
+                        final Requestor requestor = new RequestorImpl(getActivity());
+                        requestor.login(login, pass, new Response.Listener<LoginDTO>() {
                             @Override
-                            public void onResponse(JSONObject response) {
+                            public void onResponse(LoginDTO response) {
+                                PreferenceManager.getDefaultSharedPreferences(getActivity()).edit().putString(
+                                        getActivity().getString(R.string.myuid),
+                                        response.uid
+                                ).apply();
                                 ((LoginActivity) getActivity()).onTokenReceived(
                                         new JBRssAccount(mLogin.getText().toString()),
-                                        mPassword.getText().toString(), response.optString("token_type") + " " + response.optString("access_token")
+                                        mPassword.getText().toString(),
+                                        response.token_type + " " + response.access_token
                                 );
                             }
                         });
