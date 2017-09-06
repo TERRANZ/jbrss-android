@@ -31,26 +31,34 @@
             <intent-filter>
                 <action android:name="android.accounts.AccountAuthenticator" />
             </intent-filter>
+
             <meta-data
                 android:name="android.accounts.AccountAuthenticator"
                 android:resource="@xml/authenticator" />
         </service>
         <service
-            android:name="ru.terra.jbrss.core.SyncService"
+            android:name=".core.SyncService"
             android:exported="true"
             android:process=":sync">
             <intent-filter>
-                <action android:name="android.content.SyncAdapter"/>
+                <action android:name="android.content.SyncAdapter" />
             </intent-filter>
-            <meta-data android:name="android.content.SyncAdapter"
+
+            <meta-data
+                android:name="android.content.SyncAdapter"
                 android:resource="@xml/syncadapter" />
         </service>
+
         <provider
             android:name=".storage.impl.JBRSSContentProvider"
             android:authorities="ru.terra.jbrss"
             android:exported="false"
             android:syncable="true" />
 
+        <activity
+            android:name=".activity.ShowPostActivity"
+            android:label="@string/title_activity_show_post"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>

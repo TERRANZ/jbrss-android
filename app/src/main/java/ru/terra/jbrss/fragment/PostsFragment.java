@@ -1,15 +1,19 @@
 package ru.terra.jbrss.fragment;
 
+import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ListView;
 
 import ru.terra.jbrss.R;
+import ru.terra.jbrss.activity.ShowPostActivity;
 import ru.terra.jbrss.adapter.PostsCursorAdapter;
+import ru.terra.jbrss.core.CursorsCache;
 import ru.terra.jbrss.storage.entity.PostContract;
 
 public class PostsFragment extends Fragment {
@@ -37,6 +41,13 @@ public class PostsFragment extends Fragment {
                 null
         );
         view.setAdapter(new PostsCursorAdapter(getActivity(), c));
+        CursorsCache.getInstance().setPostCursor(c);
+        view.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                getActivity().startActivity(new Intent(getActivity(), ShowPostActivity.class).putExtra("pos", position));
+            }
+        });
         return view;
     }
 

@@ -8,4 +8,5 @@
     <string name="password">Password</string>
     <string name="sign_in">Sign in</string>
     <string name="myuid">my_uid</string>
+    <string name="title_activity_show_post">ShowPostActivity</string>
 </resources>
