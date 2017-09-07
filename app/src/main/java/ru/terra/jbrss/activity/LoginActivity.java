@@ -15,6 +15,11 @@ import ru.terra.jbrss.net.Constants;
 public class LoginActivity extends AccountAuthenticatorActivity {
 
     public static String EXTRA_TOKEN_TYPE = "jbrss_login";
+    public static final long SECONDS_PER_MINUTE = 60L;
+    public static final long SYNC_INTERVAL_IN_MINUTES = 15L;
+    public static final long SYNC_INTERVAL =
+            SYNC_INTERVAL_IN_MINUTES *
+                    SECONDS_PER_MINUTE;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,6 +33,11 @@ public class LoginActivity extends AccountAuthenticatorActivity {
                 settings.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
                 settings.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
                 ContentResolver.requestSync(availableAccounts[0], Constants.AUTHORITY, settings);
+                ContentResolver.addPeriodicSync(
+                        availableAccounts[0],
+                        Constants.AUTHORITY,
+                        Bundle.EMPTY,
+                        SYNC_INTERVAL);
                 startActivity(new Intent(this, FeedsActivity.class));
                 finish();
             } else {
