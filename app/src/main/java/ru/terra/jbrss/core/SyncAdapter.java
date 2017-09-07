@@ -98,6 +98,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                                                             provider.insert(PostContract.CONTENT_URI, cv);
                                                             Log.i(this.getClass().getName(), "Loaded post: " + fp.getPosttitle());
                                                             ++syncResult.stats.numInserts;
+                                                        } else {
+                                                            Log.i(this.getClass().getName(), "Post " + fp.getPosttitle() + " already exists");
                                                         }
                                                     }
                                                 } catch (RemoteException e) {

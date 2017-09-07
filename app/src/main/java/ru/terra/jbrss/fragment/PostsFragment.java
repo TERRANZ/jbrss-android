@@ -38,7 +38,7 @@ public class PostsFragment extends Fragment {
                 null,
                 PostContract.PostEntity.FEED_ID + " = ?",
                 new String[]{getArguments().getString("fid")},
-                null
+                PostContract.PostEntity.DATE + " DESC"
         );
         view.setAdapter(new PostsCursorAdapter(getActivity(), c));
         CursorsCache.getInstance().setPostCursor(c);
