@@ -82,7 +82,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                                             Log.i(this.getClass().getName(), "Loaded feed: " + feed.feedname);
                                             ++syncResult.stats.numInserts;
                                         }
-                                        requestor.getFeedPosts(finalAuthToken, feed.getId(), 1, 5, new Response.Listener<FeedPostsPageableDto>() {
+                                        requestor.getFeedPosts(finalAuthToken, feed.getId(), 1, 50, new Response.Listener<FeedPostsPageableDto>() {
                                             @Override
                                             public void onResponse(FeedPostsPageableDto response) {
                                                 try {
