@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.android.volley.Response;
 
@@ -67,6 +68,7 @@ public class Authenticator extends AbstractAccountAuthenticator {
                                 mContext.getString(R.string.myuid),
                                 response.uid
                         ).apply();
+                        Log.i(this.getClass().getName(), "Auth ok, token: " + response.access_token);
                     }
                 });
             }
@@ -75,6 +77,7 @@ public class Authenticator extends AbstractAccountAuthenticator {
             result.putString(AccountManager.KEY_ACCOUNT_NAME, account.name);
             result.putString(AccountManager.KEY_ACCOUNT_TYPE, account.type);
             result.putString(AccountManager.KEY_AUTHTOKEN, authToken[0]);
+            am.setAuthToken(account, account.type, authToken[0]);
         } else {
             final Intent intent = new Intent(mContext, LoginActivity.class);
             intent.putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, response);

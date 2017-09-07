@@ -2,6 +2,9 @@ package ru.terra.jbrss.core;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.accounts.AccountManagerFuture;
+import android.accounts.AuthenticatorException;
+import android.accounts.OperationCanceledException;
 import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
 import android.content.ContentResolver;
@@ -14,7 +17,11 @@ import android.os.Bundle;
 import android.os.RemoteException;
 import android.util.Log;
 
+import com.android.volley.AuthFailureError;
 import com.android.volley.Response;
+import com.android.volley.VolleyError;
+
+import java.io.IOException;
 
 import ru.terra.jbrss.net.Requestor;
 import ru.terra.jbrss.net.dto.FeedDto;
@@ -49,55 +56,83 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, final ContentProviderClient provider, final SyncResult syncResult) {
         try {
-            final String authToken = mAccountManager.blockingGetAuthToken(account, JBRssAccount.TYPE, true);
-            requestor.getFeeds(authToken, new Response.Listener<FeedListDto>() {
-                @Override
-                public void onResponse(FeedListDto response) {
-                    for (final FeedDto feed : response.getData()) {
-                        try {
-                            if (!checkFeed(feed.id, provider)) {
-                                ContentValues cv = new ContentValues();
-                                cv.put(FeedContract.FeedEntry.EXTERNAL_ID, feed.id);
-                                cv.put(FeedContract.FeedEntry.NAME, feed.feedname);
-                                cv.put(FeedContract.FeedEntry.UPDATE_TIME, feed.updateTime);
-                                cv.put(FeedContract.FeedEntry.URL, feed.feedurl);
-                                provider.insert(FeedContract.CONTENT_URI, cv);
-                                Log.i(this.getClass().getName(), "Loaded feed: " + feed.feedname);
-                                ++syncResult.stats.numInserts;
-                            }
-                            requestor.getFeedPosts(authToken, feed.getId(), 1, 5, new Response.Listener<FeedPostsPageableDto>() {
-                                @Override
-                                public void onResponse(FeedPostsPageableDto response) {
+            AccountManagerFuture<Bundle> accountManagerFuture = mAccountManager.getAuthToken(account, JBRssAccount.TYPE, null, true, null, null);
+            String authToken = null;
+            try {
+                Bundle authTokenBundle = accountManagerFuture.getResult();
+                authToken = authTokenBundle.get(AccountManager.KEY_AUTHTOKEN).toString();
+                Log.i(this.getClass().getName(), "Authtoken " + authToken);
+            } catch (OperationCanceledException | IOException | AuthenticatorException e) {
+                e.printStackTrace();
+            }
+            if (authToken != null) {
+                final String finalAuthToken = authToken;
+                requestor.getFeeds(authToken, new Response.Listener<FeedListDto>() {
+                            @Override
+                            public void onResponse(FeedListDto response) {
+                                for (final FeedDto feed : response.getData()) {
                                     try {
-                                        for (FeedPostDto fp : response.getPosts()) {
-                                            if (!checkPost(fp.getId(), provider)) {
-                                                ContentValues cv = new ContentValues();
-                                                cv.put(PostContract.PostEntity.EXTERNAL_ID, fp.getId());
-                                                cv.put(PostContract.PostEntity.DATE, fp.getPostdate());
-                                                cv.put(PostContract.PostEntity.FEED_ID, fp.getFeedId());
-                                                cv.put(PostContract.PostEntity.LINK, fp.getPostlink());
-                                                cv.put(PostContract.PostEntity.TEXT, fp.getPosttext());
-                                                cv.put(PostContract.PostEntity.TITLE, fp.getPosttitle());
-                                                provider.insert(PostContract.CONTENT_URI, cv);
-                                                Log.i(this.getClass().getName(), "Loaded post: " + fp.getPosttitle());
-                                                ++syncResult.stats.numInserts;
-                                            }
+                                        if (!checkFeed(feed.id, provider)) {
+                                            ContentValues cv = new ContentValues();
+                                            cv.put(FeedContract.FeedEntry.EXTERNAL_ID, feed.id);
+                                            cv.put(FeedContract.FeedEntry.NAME, feed.feedname);
+                                            cv.put(FeedContract.FeedEntry.UPDATE_TIME, feed.updateTime);
+                                            cv.put(FeedContract.FeedEntry.URL, feed.feedurl);
+                                            provider.insert(FeedContract.CONTENT_URI, cv);
+                                            Log.i(this.getClass().getName(), "Loaded feed: " + feed.feedname);
+                                            ++syncResult.stats.numInserts;
                                         }
+                                        requestor.getFeedPosts(finalAuthToken, feed.getId(), 1, 5, new Response.Listener<FeedPostsPageableDto>() {
+                                            @Override
+                                            public void onResponse(FeedPostsPageableDto response) {
+                                                try {
+                                                    for (FeedPostDto fp : response.getPosts()) {
+                                                        if (!checkPost(fp.getId(), provider)) {
+                                                            ContentValues cv = new ContentValues();
+                                                            cv.put(PostContract.PostEntity.EXTERNAL_ID, fp.getId());
+                                                            cv.put(PostContract.PostEntity.DATE, fp.getPostdate());
+                                                            cv.put(PostContract.PostEntity.FEED_ID, fp.getFeedId());
+                                                            cv.put(PostContract.PostEntity.LINK, fp.getPostlink());
+                                                            cv.put(PostContract.PostEntity.TEXT, fp.getPosttext());
+                                                            cv.put(PostContract.PostEntity.TITLE, fp.getPosttitle());
+                                                            provider.insert(PostContract.CONTENT_URI, cv);
+                                                            Log.i(this.getClass().getName(), "Loaded post: " + fp.getPosttitle());
+                                                            ++syncResult.stats.numInserts;
+                                                        }
+                                                    }
+                                                } catch (RemoteException e) {
+                                                    e.printStackTrace();
+                                                    ++syncResult.stats.numIoExceptions;
+                                                }
+                                            }
+                                        }, new Response.ErrorListener() {
+                                            @Override
+                                            public void onErrorResponse(VolleyError error) {
+                                                if (error instanceof AuthFailureError) {
+                                                    mAccountManager.invalidateAuthToken(JBRssAccount.TYPE, finalAuthToken);
+                                                }
+                                                ++syncResult.stats.numIoExceptions;
+                                            }
+                                        });
                                     } catch (RemoteException e) {
                                         e.printStackTrace();
                                         ++syncResult.stats.numIoExceptions;
                                     }
                                 }
-                            });
-                        } catch (RemoteException e) {
-                            e.printStackTrace();
-                            ++syncResult.stats.numIoExceptions;
+                            }
+                        }, new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                if (error instanceof AuthFailureError) {
+                                    mAccountManager.invalidateAuthToken(JBRssAccount.TYPE, finalAuthToken);
+                                }
+                                ++syncResult.stats.numIoExceptions;
+                            }
                         }
-                    }
-                }
-            });
+                );
+            }
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e(this.getClass().getName(), "Error while syncing", e);
         }
     }
 

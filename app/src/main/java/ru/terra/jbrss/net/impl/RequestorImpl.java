@@ -60,7 +60,7 @@ public class RequestorImpl implements Requestor {
     }
 
     @Override
-    public void getFeeds(String authToken, Response.Listener<FeedListDto> listener) {
+    public void getFeeds(String authToken, Response.Listener<FeedListDto> listener, Response.ErrorListener errorListener) {
         String myId = PreferenceManager.getDefaultSharedPreferences(context).getString(
                 context.getString(R.string.myuid),
                 ""
@@ -75,17 +75,13 @@ public class RequestorImpl implements Requestor {
                 FeedListDto.class,
                 headers,
                 new HashMap<String, String>(),
-                listener, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Log.e(RequestorImpl.class.getName(), "Error while loading feeds", error);
-            }
-        });
+                listener,
+                errorListener);
         mRequestQueue.add(vr);
     }
 
     @Override
-    public void getFeedPosts(String authToken, Integer targetFeed, Integer page, Integer perPage, Response.Listener<FeedPostsPageableDto> listener) {
+    public void getFeedPosts(String authToken, Integer targetFeed, Integer page, Integer perPage, Response.Listener<FeedPostsPageableDto> listener, Response.ErrorListener errorListener) {
         String myId = PreferenceManager.getDefaultSharedPreferences(context).getString(
                 context.getString(R.string.myuid),
                 ""
@@ -105,12 +101,8 @@ public class RequestorImpl implements Requestor {
                 FeedPostsPageableDto.class,
                 headers,
                 new HashMap<String, String>(),
-                listener, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Log.e(RequestorImpl.class.getName(), "Error while loading posts", error);
-            }
-        });
+                listener,
+                errorListener);
         mRequestQueue.add(vr);
     }
 
