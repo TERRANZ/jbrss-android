@@ -2,9 +2,6 @@ package ru.terra.jbrss.core;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
-import android.accounts.AccountManagerFuture;
-import android.accounts.AuthenticatorException;
-import android.accounts.OperationCanceledException;
 import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
 import android.content.ContentResolver;
@@ -20,8 +17,6 @@ import android.util.Log;
 import com.android.volley.AuthFailureError;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-
-import java.io.IOException;
 
 import ru.terra.jbrss.net.Requestor;
 import ru.terra.jbrss.net.dto.FeedDto;
@@ -56,15 +51,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, final ContentProviderClient provider, final SyncResult syncResult) {
         try {
-            AccountManagerFuture<Bundle> accountManagerFuture = mAccountManager.getAuthToken(account, JBRssAccount.TYPE, null, true, null, null);
-            String authToken = null;
-            try {
-                Bundle authTokenBundle = accountManagerFuture.getResult();
-                authToken = authTokenBundle.get(AccountManager.KEY_AUTHTOKEN).toString();
-                Log.i(this.getClass().getName(), "Authtoken " + authToken);
-            } catch (OperationCanceledException | IOException | AuthenticatorException e) {
-                e.printStackTrace();
-            }
+            String authToken = mAccountManager.blockingGetAuthToken(account, account.type, true);
             if (authToken != null) {
                 final String finalAuthToken = authToken;
                 requestor.getFeeds(authToken, new Response.Listener<FeedListDto>() {
@@ -132,6 +119,10 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                             }
                         }
                 );
+            } else {
+                Log.i(this.getClass().getName(), "Authtoken is null");
+                mAccountManager.invalidateAuthToken(JBRssAccount.TYPE, null);
+                mAccountManager.setAuthToken(account, account.type, mAccountManager.blockingGetAuthToken(account, account.type, true));
             }
         } catch (Exception e) {
             Log.e(this.getClass().getName(), "Error while syncing", e);
