@@ -5,6 +5,7 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.android.volley.Cache;
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Network;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -77,6 +78,10 @@ public class RequestorImpl implements Requestor {
                 new HashMap<String, String>(),
                 listener,
                 errorListener);
+        vr.setRetryPolicy(new DefaultRetryPolicy(
+                60000,
+                4,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
         mRequestQueue.add(vr);
     }
 
@@ -103,6 +108,10 @@ public class RequestorImpl implements Requestor {
                 new HashMap<String, String>(),
                 listener,
                 errorListener);
+        vr.setRetryPolicy(new DefaultRetryPolicy(
+                60000,
+                4,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
         mRequestQueue.add(vr);
     }
 

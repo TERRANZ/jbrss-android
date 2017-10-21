@@ -98,7 +98,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                                             @Override
                                             public void onErrorResponse(VolleyError error) {
                                                 if (error instanceof AuthFailureError) {
-                                                    mAccountManager.invalidateAuthToken(JBRssAccount.TYPE, finalAuthToken);
+                                                    mAccountManager.invalidateAuthToken(JBRssAccount.TYPE, null);
                                                 }
                                                 ++syncResult.stats.numIoExceptions;
                                             }
@@ -113,7 +113,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                             @Override
                             public void onErrorResponse(VolleyError error) {
                                 if (error instanceof AuthFailureError) {
-                                    mAccountManager.invalidateAuthToken(JBRssAccount.TYPE, finalAuthToken);
+                                    mAccountManager.invalidateAuthToken(JBRssAccount.TYPE, null);
                                 }
                                 ++syncResult.stats.numIoExceptions;
                             }

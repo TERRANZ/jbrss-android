@@ -52,7 +52,7 @@ public class Authenticator extends AbstractAccountAuthenticator {
     }
 
     @Override
-    public Bundle getAuthToken(AccountAuthenticatorResponse response, final Account account, String authTokenType, Bundle options) throws NetworkErrorException {
+    public Bundle getAuthToken(final AccountAuthenticatorResponse response, final Account account, final String authTokenType, Bundle options) throws NetworkErrorException {
         final Bundle result = new Bundle();
         final AccountManager am = AccountManager.get(mContext.getApplicationContext());
         final String[] authToken = {am.peekAuthToken(account, authTokenType)};
@@ -62,29 +62,32 @@ public class Authenticator extends AbstractAccountAuthenticator {
                 final Requestor requestor = new RequestorImpl(mContext);
                 requestor.login(account.name, password, new Response.Listener<LoginDTO>() {
                     @Override
-                    public void onResponse(LoginDTO response) {
-                        authToken[0] = response.token_type + " " + response.access_token;
+                    public void onResponse(LoginDTO loginDTO) {
+                        authToken[0] = loginDTO.token_type + " " + loginDTO.access_token;
                         PreferenceManager.getDefaultSharedPreferences(mContext).edit().putString(
                                 mContext.getString(R.string.myuid),
-                                response.uid
+                                loginDTO.uid
                         ).apply();
-                        Log.i(this.getClass().getName(), "Auth ok, token: " + response.access_token);
+                        Log.i(this.getClass().getName(), "Auth ok, token: " + authToken[0]);
+                        if (!TextUtils.isEmpty(authToken[0])) {
+                            result.putString(AccountManager.KEY_ACCOUNT_NAME, account.name);
+                            result.putString(AccountManager.KEY_ACCOUNT_TYPE, account.type);
+                            result.putString(AccountManager.KEY_AUTHTOKEN, authToken[0]);
+                            am.setAuthToken(account, account.type, authToken[0]);
+                            Log.i(this.getClass().getName(), "setAuthToken " + authToken[0]);
+                        } else {
+                            final Intent intent = new Intent(mContext, LoginActivity.class);
+                            intent.putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, response);
+                            intent.putExtra(LoginActivity.EXTRA_TOKEN_TYPE, authTokenType);
+                            final Bundle bundle = new Bundle();
+                            bundle.putParcelable(AccountManager.KEY_INTENT, intent);
+                            Log.i(this.getClass().getName(), "AccountManager.KEY_INTENT");
+                        }
                     }
                 });
             }
         }
-        if (!TextUtils.isEmpty(authToken[0])) {
-            result.putString(AccountManager.KEY_ACCOUNT_NAME, account.name);
-            result.putString(AccountManager.KEY_ACCOUNT_TYPE, account.type);
-            result.putString(AccountManager.KEY_AUTHTOKEN, authToken[0]);
-            am.setAuthToken(account, account.type, authToken[0]);
-        } else {
-            final Intent intent = new Intent(mContext, LoginActivity.class);
-            intent.putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, response);
-            intent.putExtra(LoginActivity.EXTRA_TOKEN_TYPE, authTokenType);
-            final Bundle bundle = new Bundle();
-            bundle.putParcelable(AccountManager.KEY_INTENT, intent);
-        }
+
         return result;
     }
 
